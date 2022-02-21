@@ -119,7 +119,7 @@ ndf <- data.frame(x = 1:10000,
                   y = runif(10000,0,1)*abs(rnorm(10000, sin(((1:10000) - 0)*(.017))+nmu, 0.25)))
 
 t1 <- Sys.time()
-dlist <- lapply(1:6, function(x){
+dlist <- lapply(4:6, function(x){
   plist[[x]]$ninfun <- approxfun(ndf)
   plist[[x]]$approx_therm <- approxfun(data.frame(x = 1:10000, y = rep(7, 10000)))
   plist[[x]]$approx_light <- approxfun(lgtdf)
@@ -150,7 +150,7 @@ dlist %>%
   mutate(grp = factor(grp, levels = c("L", "tem", "N", "detritus", "plant", "phyto", "prot", "zoop",
                                       "macroinv", "fish"))) %>% 
   ggplot(aes(x = Var1, y = value, color = factor(config))) + geom_line(size = 1.2) + 
-  #scale_y_log10() +
+  scale_y_log10() +
   scale_color_viridis_d(end = 0.8) + 
   facet_wrap(~grp, scales = "free_y", nrow = 2) + 
   theme_bw() + 
@@ -294,6 +294,7 @@ lgtdf <- data.frame(x = 1:10000, y = 250)
 nmu <- (runif(10000, 0.5, 2))
 ndf <- data.frame(x = 1:10000, 
                   y = runif(10000,0,1)*abs(rnorm(10000, sin(((1:10000) - 0)*(.017))+nmu, 0.25)))
+ndf <- data.frame(x = 1:10000, y = abs(2*sin(((1:10000) - 0)*(.017))+sin(((1:10000) - 0)*(.017*2))))
 
 t1 <- Sys.time()
 dlistN <- lapply(1:6, function(x){
@@ -315,7 +316,7 @@ dlistN <- do.call(rbind, dlistN)
 
 dlistN %>% 
   mutate(Var2 = as.character(Var2)) %>% 
-  filter(!Var2 %in% c("L", "tem")) %>% 
+  filter(!Var2 %in% c("L", "tem"), Var1 %in% 365:(365*3)) %>% 
   mutate(grp = case_when(Var2 == "blue" ~ "phyto", Var2 == "brown" ~ "phyto",
                          Var2 == "green" ~ "phyto", Var2 == "red" ~ "phyto",
                          Var2 == "flag" ~ "prot", Var2 == "rot" ~ "zoop",
