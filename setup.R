@@ -131,6 +131,7 @@ run_NPZ <- function(state, tmax, params, temperature, light, nutrient, plot = TR
   if(plot){print(p)}
   
   t.end <- Sys.time()
-  cat("The simulation took", t.end - t.strt, "seconds")
+  t.diff <- t.end - t.strt
+  cat("The simulation took", t.diff, units(t.diff))
   return(out_sNPZ)
 }
