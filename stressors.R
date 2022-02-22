@@ -1,7 +1,4 @@
-tmu <- sample(17:22, 10000, replace = TRUE)
-tmu2 <- sample(2:7, 10000, replace = TRUE)
-tmpdf <- data.frame(x = 1:10000, y = abs(rnorm(10000, tmu2*sin(((1:10000) - 0)*(.017))+tmu, 1)))
-plot(tmpdf[1:3650,])
+
 
 #### TEMPERATURE ####
 tmpdf_const <- data.frame(x = 1:10000, y = 20)
@@ -21,10 +18,10 @@ lgtdf <- data.frame(x = 1:10000, y = abs(rnorm(10000, lmu2*sin(((1:10000) - 0)*(
 
 lgtdf_const_low <- data.frame(x = 1:10000, y = 150)
 lgtdf_const_hi <- data.frame(x = 1:10000, y = 250)
-
-lgtdf_40 <- data.frame(x = 1:10000, y = 40*sin(((1:10000) - 0)*(.017))+200)
-plot(lgtdf_40[1:3650,])
-lgtdf_60 <- data.frame(x = 1:10000, y = 60*sin(((1:10000) - 0)*(.017))+200)
+yr1 <- (1:720 + ymd("2020-01-01"))
+lgtdf_40 <- data.frame(x = 1:10000, y = 40*sin(((1:10000) - 0)*(.013))+200)
+plot(lgtdf_40[1:720,2] ~ yr1)
+lgtdf_60 <- data.frame(x = 1:10000, y = 60*sin(((1:10000) - 0)*(.013))+200)
 plot(lgtdf_60[1:3650,])
 
 lgtdf_40_stoch <- data.frame(x = 1:10000, 
