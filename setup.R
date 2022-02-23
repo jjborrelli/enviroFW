@@ -135,3 +135,186 @@ run_NPZ <- function(state, tmax, params, temperature, light, nutrient, plot = TR
   cat("The simulation took", t.diff, units(t.diff))
   return(out_sNPZ)
 }
+
+spnam <- c("DOC", "Nanno", "Blue", "Brown", "Green", "Red", "Flag", "Rot", "Clad", "Cal", "Cyc", "Fsh")
+
+
+adj_npz <- matrix(c(0,0,1,
+                    0,0,1,
+                    0,0,0), nrow = 3, byrow = TRUE)
+
+colnames(adj_npz) <- c("DOC", "Phyto", "Zoop")
+rownames(adj_npz) <- c("DOC", "Phyto", "Zoop")
+
+adj_gnpz <- matrix(c(0,0,0,0,0,0,1,1,1,1,0,
+                     0,0,0,0,0,0,1,1,1,0,0,
+                     0,0,0,0,0,0,0,1,1,1,1,
+                     0,0,0,0,0,0,0,1,1,1,1,
+                     0,0,0,0,0,0,0,1,1,1,1,
+                     0,0,0,0,0,0,0,1,1,1,1,
+                     0,0,0,0,0,0,0,0,1,1,1,
+                     0,0,0,0,0,0,0,0,0,0,1,
+                     0,0,0,0,0,0,0,0,0,0,0,
+                     0,0,0,0,0,0,0,0,0,0,0,
+                     0,0,0,0,0,0,0,0,0,0,0), nrow = 11, byrow = TRUE)
+
+colnames(adj_gnpz) <- spnam[-length(spnam)]
+rownames(adj_gnpz) <- spnam[-length(spnam)]
+
+adj_gnpzf <- matrix(c(0,0,0,0,0,0,1,1,1,1,0,0,
+                      0,0,0,0,0,0,1,1,1,0,0,0,
+                      0,0,0,0,0,0,0,1,1,1,1,0,
+                      0,0,0,0,0,0,0,1,1,1,1,0,
+                      0,0,0,0,0,0,0,1,1,1,1,0,
+                      0,0,0,0,0,0,0,1,1,1,1,0,
+                      0,0,0,0,0,0,0,0,1,1,1,0,
+                      0,0,0,0,0,0,0,0,0,0,1,0,
+                      0,0,0,0,0,0,0,0,0,0,0,1,
+                      0,0,0,0,0,0,0,0,0,0,0,1,
+                      0,0,0,0,0,0,0,0,0,0,0,1,
+                      0,0,0,0,0,0,0,0,0,0,0,0), nrow = 12, byrow = TRUE)
+
+colnames(adj_gnpzf) <- spnam
+rownames(adj_gnpzf) <- spnam
+
+mlist <- readRDS("data/smWebMats.rds")
+
+adj <- c(list(adj_npz, adj_gnpz, adj_gnpzf), mlist)
+
+plist <- readRDS("data/smWebPARAMs.rds")
+
+
+pars_npz <- list(
+  n.in = .3,
+  ninfun = approxfun(ndf_const_low),
+  n.out = 0.2,   
+  x.in = c(0, 0, 0),
+  kN = 5,
+  n.frac = 0.009,
+  mineralization = 0.00,
+  prod = c(0,1,0),
+  r = c(0, 1, 0),
+  x.i = c(0,0,0.08),
+  s = 0.2,
+  q = 1.2, 
+  Ks = 1, 
+  fa = 0.4,
+  fm = 0.1,
+  yij = yij,
+  B0 = B0ij,
+  eij = assim,
+  d = mat*rbeta(length(mat), .5,4),
+  w = w2,
+  p = p,
+  m = c(0,0,0.05), 
+  cij = cijalt,
+  h = 10,
+  approx_therm = approxfun(data.frame(x = c(1, 10000), y = c(10, 10)), rule = 2),
+  a.phy = 1e5,
+  a.bg = 0.35, 
+  I0 = c(1, 20, 1),
+  approx_light = approxfun(lgtdf_const_low, rule = 2),
+  Q10 = 3,
+  T0 = 12,
+  T0.phyt = c(20, 25, 20),
+  tsteep = c(100, 150, 100),
+  maxt = c(40, 40, 40),
+  approx_temp = approxfun(tmpdf_const, rule = 2),
+  DOCloss = 0
+)
+
+pars_gnpz <- list(
+  n.in = 5,
+  ninfun = approxfun(ndf_const_low),
+  n.out = 0.2,
+  x.in = c(0, 0, 0, 0, 0, 0, 0, 0.02, 0, 0, 0),
+  kN = c(1,14,5,61,30,23,36,1,1,1,1),  # allometric kN
+  #kN = c(1,5,3,5,4,7,5,1,1,1,1),        # arbitrary kN
+  n.frac = 0.009,
+  mineralization = 0.00,
+  prod = c(0,1,1,1,1,1,1,0,0,0,0),
+  r = c(0, 0.6, 1.09, 0.95, 1, 1.38, 0.9, 0, 0, 0, 0, 0),
+  x.i = c(0,0,0,0,0,0,0,.012,.07,.07,.08),
+  s = 0.2,
+  q = 1.2,
+  Ks = 1, 
+  fa = 0.4,
+  fm = 0.1,
+  yij = yij,
+  B0 = B0ij,
+  eij = assim,
+  d = mat.a*rbeta(length(mat.a), 1,2),
+  w = apply(w2.a, 2, function(x){if(sum(x) > 0){x/sum(x)}else{rep(0, length(x))}}),#w2.a,
+  p = p,
+  m = c(0,0,0,0,0,0,0,0,0.05,0.05,0.03), #c(0,0,0,0,0,0,0,0,0.03,0.03,0.01)
+  cij = cijalt,#1.8,
+  h = 10,
+  approx_therm = approxfun(data.frame(x = c(1, 10000), y = c(10, 10)), rule = 2),
+  a.phy = 1e5,
+  a.bg = 0.35, 
+  I0 = c(1,25,15,20,25,25,25,1,1,1,1),
+  approx_light = approxfun(lgtdf_const_low, rule = 2),
+  Q10 = 3,#c(1,1,1,1,1,1,1,3,3,3,3),
+  T0 = 10,
+  T0.phyt = c(1,25,28,20,27,25,25,1,1,1,1),
+  tsteep = c(10,150,150,150,150,150,150,10,10,10,10),
+  maxt = c(40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40),
+  approx_temp = approxfun(tmpdf_const, rule = 2),
+  DOCloss = 0
+)
+
+
+pars_gnpzf <- list(
+  n.in = 5,
+  ninfun = approxfun(ndf_const_low),
+  n.out = 0.2,
+  x.in = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+  kN = c(1,14,5,61,30,23,36,1,1,1,1,1),  # allometric kN
+  #kN = c(1,5,3,5,4,7,5,1,1,1,1, 1),        # arbitrary kN
+  n.frac = 0.009,
+  mineralization = 0.00,
+  prod = c(0,1,1,1,1,1,1,0,0,0,0,0),
+  r = c(0, 0.6, 1.09, 0.95, 1, 1.38, 0.9, 0, 0, 0, 0, 0),
+  x.i = c(0,0,0,0,0,0,0,.012,.07,.07,.08,.05),
+  s = 0.2,
+  q = 1.2,
+  Ks = 1, 
+  fa = 0.4,
+  fm = 0.1,
+  yij = yij,
+  B0 = B0ij,
+  eij = assim,
+  d = mat.a*rbeta(length(mat.a), 1,2),
+  w = apply(w2.a, 2, function(x){if(sum(x) > 0){x/sum(x)}else{rep(0, length(x))}}),#w2.a,
+  p = p,
+  m = c(0,0,0,0,0,0,0,0,0.05,0.05,0.03,0.001), #c(0,0,0,0,0,0,0,0,0.03,0.03,0.01)
+  cij = cijalt,#1.8,
+  h = 10,
+  approx_therm = approxfun(data.frame(x = c(1, 10000), y = c(10, 10)), rule = 2),
+  a.phy = 1e5,
+  a.bg = 0.35, 
+  I0 = c(1,25,15,20,25,25,25,1,1,1,1,1),
+  approx_light = approxfun(lgtdf_const_low, rule = 2),
+  Q10 = 3,#c(1,1,1,1,1,1,1,3,3,3,3),
+  T0 = 10,
+  T0.phyt = c(1,25,28,20,27,25,25,1,1,1,1,1),
+  tsteep = c(10,150,150,150,150,150,150,10,10,10,10,10),
+  maxt = c(40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40),
+  approx_temp = approxfun(tmpdf_const, rule = 2),
+  DOCloss = 0
+)
+
+paramlst <- c(list(pars_npz, pars_gnpz, pars_gnpzf), plist)
+
+slist <- readRDS("data/smWebStates.rds")
+
+s1 <- c(N = 1.5, D = 100, P = 327.6, Z = 283)
+s2 <- c(N = 5, DOC = 100, Nanno = 50, Blue = 25, Brown = 164, Green = 20.5, Red = 36.7,
+           Flag = 31.4, Rot = 3, Clad = 60, Cal = 100, Cyc = 120)
+s3 <- c(N = 5, DOC = 100, Nanno = 50, Blue = 25, Brown = 164, Green = 20.5, Red = 36.7,
+           Flag = 31.4, Rot = 3, Clad = 60, Cal = 100, Cyc = 120, Fsh = 200)
+allstates <- c(list(s1, s2, s3), slist)
+
+select_foodweb <- function(x){
+  return(list(mat = adj[[x]], params = paramlst[[x]], state = allstates[[x]]))
+}
