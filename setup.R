@@ -113,7 +113,7 @@ goExtinct <- function(times, states, parms){
 }
 
 # FUNCTION TO RUN THE SIMULATION 
-run_NPZ <- function(state, tmax, params, temperature, light, nutrient, plot = TRUE){
+run_NPZ <- function(state, tmax, params, temperature, light, nutrient, plot = TRUE, plot_clip = 1){
   t.strt <- Sys.time()
   params$ninfun <- approxfun(nutrient, rule = 2)
   params$approx_light <- approxfun(light, rule = 2)
@@ -122,7 +122,7 @@ run_NPZ <- function(state, tmax, params, temperature, light, nutrient, plot = TR
   out_sNPZ <- ode(state, times = 1:tmax, func = atn, parms = params, 
                   events = list(func = goExtinct, time = 1:tmax))
   
-  p <- reshape2::melt(out_sNPZ[,2:ncol(out_sNPZ)]) %>% 
+  p <- reshape2::melt(out_sNPZ[plot_clip:nrow(out_sNPZ),2:ncol(out_sNPZ)]) %>% 
     ggplot(aes(x = Var1 + ymd("2015-05-02"), value)) +  
     geom_line(color = "blue", size = 1.2) +
     facet_wrap(~Var2, scales = "free_y") + 
