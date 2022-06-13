@@ -1,5 +1,6 @@
 # Data
 data/
+dataverse_files/
 
 # History files
 .Rhistory
